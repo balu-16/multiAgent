@@ -1,0 +1,139 @@
+{
+  "kind": "real_services",
+  "timestamp": "2026-10-16T08:32:37.715314+00:00",
+  "passed": false,
+  "checks": [
+    {
+      "name": "health",
+      "passed": true
+    },
+    {
+      "name": "unauthenticated_request_rejected",
+      "passed": true
+    },
+    {
+      "name": "credentialed_cors",
+      "passed": true
+    },
+    {
+      "name": "register_user_1",
+      "passed": true,
+      "http_status": 201
+    },
+    {
+      "name": "private_cookie_1",
+      "passed": true
+    },
+    {
+      "name": "register_user_2",
+      "passed": true,
+      "http_status": 201
+    },
+    {
+      "name": "private_cookie_2",
+      "passed": true
+    },
+    {
+      "name": "invalid_password_rejected",
+      "passed": true
+    },
+    {
+      "name": "login",
+      "passed": true
+    },
+    {
+      "name": "session_restoration",
+      "passed": true
+    },
+    {
+      "name": "missing_origin_rejected",
+      "passed": true
+    },
+    {
+      "name": "tampered_jwt_rejected",
+      "passed": true
+    },
+    {
+      "name": "real_groq_persona_generation",
+      "passed": true,
+      "http_status": 200,
+      "seconds": 3.578
+    },
+    {
+      "name": "persona_contract",
+      "passed": true
+    },
+    {
+      "name": "persona_under_two_seconds",
+      "passed": false,
+      "seconds": 3.578
+    },
+    {
+      "name": "start_eight_message_room",
+      "passed": true,
+      "http_status": 200
+    },
+    {
+      "name": "websocket_snapshot_first",
+      "passed": true
+    },
+    {
+      "name": "exact_message_cap",
+      "passed": true,
+      "count": 8
+    },
+    {
+      "name": "clean_bubble_delimiters",
+      "passed": true
+    },
+    {
+      "name": "typing_transitions",
+      "passed": true
+    },
+    {
+      "name": "ordered_live_events",
+      "passed": true
+    },
+    {
+      "name": "one_terminal_event",
+      "passed": true
+    },
+    {
+      "name": "completed_room_reconnect",
+      "passed": true
+    },
+    {
+      "name": "real_redis_message_storage",
+      "passed": true
+    },
+    {
+      "name": "supabase_full_archive",
+      "passed": true
+    },
+    {
+      "name": "private_archive_listing",
+      "passed": true
+    },
+    {
+      "name": "cross_user_archive_denied",
+      "passed": true
+    },
+    {
+      "name": "cross_user_socket_denied",
+      "passed": true
+    },
+    {
+      "name": "logout",
+      "passed": true
+    },
+    {
+      "name": "logout_revokes_session",
+      "passed": true
+    },
+    {
+      "name": "temporary_accounts_cleaned",
+      "passed": true
+    }
+  ],
+  "functional_passed": true
+}

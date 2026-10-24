@@ -1,0 +1,38 @@
+{
+  "kind": "real_redis_deterministic_archive",
+  "passed": true,
+  "checks": [
+    {
+      "name": "real_redis_rolling_window",
+      "passed": true
+    },
+    {
+      "name": "authoritative_count_after_trimming",
+      "passed": true
+    },
+    {
+      "name": "stale_write_cannot_duplicate_history",
+      "passed": true
+    },
+    {
+      "name": "outbox_survives_store_restart",
+      "passed": true
+    },
+    {
+      "name": "outage_preserves_pending_transcript",
+      "passed": true
+    },
+    {
+      "name": "recovery_archives_once",
+      "passed": true
+    },
+    {
+      "name": "acknowledged_outbox_removed",
+      "passed": true
+    },
+    {
+      "name": "saved_metadata_preserves_empty_arrays",
+      "passed": true
+    }
+  ]
+}

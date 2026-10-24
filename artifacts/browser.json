@@ -1,0 +1,87 @@
+{
+  "kind": "deterministic_browser_full_transport",
+  "passed": true,
+  "checks": [
+    {
+      "name": "login_screen",
+      "passed": true
+    },
+    {
+      "name": "login_mobile_no_overflow",
+      "passed": true,
+      "width": 360,
+      "scrollWidth": 360
+    },
+    {
+      "name": "signup_with_private_cookie",
+      "passed": true
+    },
+    {
+      "name": "no_browser_token_storage",
+      "passed": true
+    },
+    {
+      "name": "session_survives_reload",
+      "passed": true
+    },
+    {
+      "name": "setup_mobile_no_overflow",
+      "passed": true,
+      "width": 360,
+      "scrollWidth": 360
+    },
+    {
+      "name": "generated_default_four_personas",
+      "passed": true
+    },
+    {
+      "name": "roster_mobile_no_overflow",
+      "passed": true,
+      "width": 360,
+      "scrollWidth": 360
+    },
+    {
+      "name": "edited_persona_submitted",
+      "passed": true
+    },
+    {
+      "name": "room_completes_and_saves",
+      "passed": true
+    },
+    {
+      "name": "socket_reconnect_restores_terminal_room",
+      "passed": true
+    },
+    {
+      "name": "no_duplicate_bubbles_after_reconnect",
+      "passed": true
+    },
+    {
+      "name": "chat_mobile_no_overflow",
+      "passed": true,
+      "width": 360,
+      "scrollWidth": 360
+    },
+    {
+      "name": "archive_opens_without_generation_or_socket",
+      "passed": true
+    },
+    {
+      "name": "logout_clears_transcript",
+      "passed": true
+    },
+    {
+      "name": "second_user_cannot_see_first_archive",
+      "passed": true
+    },
+    {
+      "name": "login_restores_own_archive",
+      "passed": true
+    },
+    {
+      "name": "zero_javascript_runtime_errors",
+      "passed": true
+    }
+  ],
+  "runtime_errors": []
+}

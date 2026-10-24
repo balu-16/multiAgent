@@ -1,0 +1,44 @@
+{
+  "created_at": "2026-10-16T09:02:06.586943+00:00",
+  "platform": "Linux-7.1.5-76070105-generic-x86_64-with-glibc2.39",
+  "python_version": "Python 3.11.15",
+  "uv_version": "uv 0.11.14 (x86_64-unknown-linux-gnu)",
+  "dependency_count": 40,
+  "index": "https://pypi.org/simple",
+  "method": "One measured install per tool and cache state, in a fresh disposable virtual environment. Cold starts with an empty tool cache; warm reuses only that tool cache. Environment creation and pip bootstrap/upgrade are excluded. Native locked uv sync is compared with pip install of the pinned requirements export. Default bytecode behavior is retained: pip compiles it, uv does not.",
+  "runs": [
+    {
+      "installer": "uv",
+      "cache": "cold",
+      "seconds": 5.7822,
+      "verified_dependencies": 40,
+      "packages_match": true
+    },
+    {
+      "installer": "pip",
+      "cache": "cold",
+      "seconds": 30.9258,
+      "verified_dependencies": 40,
+      "packages_match": true
+    },
+    {
+      "installer": "uv",
+      "cache": "warm",
+      "seconds": 0.0911,
+      "verified_dependencies": 40,
+      "packages_match": true
+    },
+    {
+      "installer": "pip",
+      "cache": "warm",
+      "seconds": 3.7201,
+      "verified_dependencies": 40,
+      "packages_match": true
+    }
+  ],
+  "pip_version": "26.2.1",
+  "project_dependency_files_unchanged": true,
+  "project_environment_unchanged": true,
+  "temporary_environments_removed": true,
+  "status": "completed"
+}

@@ -1,0 +1,23 @@
+{
+  "verified_at": "2026-10-16T09:02:49.808684+00:00",
+  "checks": [
+    {
+      "service": "backend",
+      "command": "cd server && source .venv/bin/activate && python main.py",
+      "url": "http://localhost:8000/health",
+      "http_status": 200,
+      "body": {
+        "status": "ok",
+        "active_rooms": 0
+      }
+    },
+    {
+      "service": "frontend",
+      "command": "cd client && npm run dev",
+      "url": "http://localhost:3000",
+      "http_status": 200,
+      "page_received": true
+    }
+  ],
+  "passed": true
+}

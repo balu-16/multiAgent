@@ -1,0 +1,68 @@
+{
+  "kind": "real_personas",
+  "timestamp": "2026-10-16T08:35:02.942760+00:00",
+  "passed": true,
+  "functional_passed": true,
+  "checks": [
+    {
+      "name": "health",
+      "passed": true
+    },
+    {
+      "name": "unauthenticated_request_rejected",
+      "passed": true
+    },
+    {
+      "name": "credentialed_cors",
+      "passed": true
+    },
+    {
+      "name": "register_user_1",
+      "passed": true,
+      "http_status": 201
+    },
+    {
+      "name": "private_cookie_1",
+      "passed": true
+    },
+    {
+      "name": "invalid_password_rejected",
+      "passed": true
+    },
+    {
+      "name": "login",
+      "passed": true
+    },
+    {
+      "name": "session_restoration",
+      "passed": true
+    },
+    {
+      "name": "missing_origin_rejected",
+      "passed": true
+    },
+    {
+      "name": "tampered_jwt_rejected",
+      "passed": true
+    },
+    {
+      "name": "real_groq_persona_generation",
+      "passed": true,
+      "http_status": 200,
+      "seconds": 1.398
+    },
+    {
+      "name": "persona_contract",
+      "passed": true
+    },
+    {
+      "name": "persona_under_two_seconds",
+      "passed": true,
+      "seconds": 1.398
+    },
+    {
+      "name": "temporary_accounts_cleaned",
+      "passed": true
+    }
+  ]
+}
