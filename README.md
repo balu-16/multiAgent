@@ -1,69 +1,169 @@
 # Backchannel
 
-A spectator group chat where AI friends debate a topic, send message bursts,
-interrupt, and eventually sign off. Built with FastAPI, asyncio actors, Groq,
-Gemini, Redis, and a warm beige Next.js interface.
+Backchannel is a spectator-only AI group chat. Give it a topic, review the
+generated group of AI personas, and watch them debate in real time. Personas
+can interrupt one another, send short message bursts, show typing activity,
+get tired and leave, and stop when the room reaches its message limit.
 
-Email/password accounts use application JWT cookies. Supabase stores password
-hashes, revocable sessions, and each user's private completed conversations.
-Authentication is implemented in FastAPI; the app does not use Supabase Auth.
+Completed conversations are saved to a private archive so users can return to
+them later.
 
-## Local setup
+## What it includes
 
-Requires Node.js 22+, Python 3.11+, and [uv](https://docs.astral.sh/uv/).
+- **Three-step web experience:** choose a topic, customize the generated
+  personas, then watch the live conversation.
+- **Multi-agent actor engine:** each persona runs as an independent asyncio
+  actor with fatigue, stamina, reaction triggers, and a silence watchdog.
+- **Streaming conversations:** Groq decides whether a persona should react;
+  Gemini streams the response, which can become multiple chat bubbles.
+- **Reliable live updates:** FastAPI WebSockets provide ordered message,
+  typing, system, history, and archive-status events.
+- **Durable storage:** Redis holds live room state and a rolling message
+  window; Supabase stores complete private transcripts.
+- **Application authentication:** Argon2id password hashing, revocable
+  HttpOnly JWT cookies, origin checks, rate limits, and ownership checks.
+- **Reconnect-safe UI:** the client merges snapshots and live events without
+  duplicating messages or regressing terminal room state.
 
-1. Fill the root `.env` using `.env.example` as a reference. An existing `.env`
-   is preserved. HTTPS Upstash URLs use `REDIS_TOKEN`; Redis TCP URLs may use
-   `redis://` or `rediss://` with credentials in the connection string.
-2. Prepare the environment and dependencies:
+## Architecture
 
-   ```bash
-   python3 scripts/setup_env.py
-   npm run setup:server
-   npm ci
-   npm --prefix client ci
-   ```
+```text
+Next.js client
+    │ REST + WebSocket
+    ▼
+FastAPI application
+    ├── Auth and archive REST APIs
+    ├── Room registry
+    ├── Asyncio actor engine
+    ├── Groq decision provider
+    └── Gemini streaming provider
+         │
+         ├── Redis: live state, last 30 messages, archive outbox
+         └── Supabase: users, sessions, complete archived chats
+```
 
-3. Apply `supabase/migrations/202610160001_backchannel.sql` to your Supabase
-   project once, using the Supabase CLI or connected MCP migration tool. This
-   workspace's connected project has already received that migration.
-4. Start the backend in one terminal from the project root:
+The backend is intentionally run with **one Uvicorn worker**. Active rooms and
+their in-memory fan-out queues belong to one process. Redis is used for
+persistence and recovery, not for one Pub/Sub connection per agent.
 
-   ```bash
-   cd server
-   source .venv/bin/activate
-   python main.py
-   ```
+### Conversation lifecycle
 
-   Start the frontend in another terminal from the project root:
+1. The user authenticates with the FastAPI backend.
+2. Groq generates 2–6 structured personas.
+3. The user edits the persona roster and starts a room.
+4. Each actor evaluates incoming messages and decides whether to speak.
+5. Gemini streams one or more bubbles; the room commits each bubble under a
+   lock so the message cap cannot be exceeded.
+6. Actors may sign off after reaching their stamina limit, while at least two
+   agents remain online.
+7. At completion, the full transcript is written to a Redis outbox.
+8. A retrying archive worker saves it idempotently to Supabase.
 
-   ```bash
-   cd client
-   npm run dev
-   ```
+## Repository layout
 
-   The root shortcuts `npm run dev:server` and `npm run dev` also start the
-   backend and frontend respectively.
+```text
+client/       Next.js App Router frontend and browser-facing state management
+server/       FastAPI API, WebSocket endpoint, providers, and actor engine
+supabase/     Database migration for users, sessions, and archived chats
+scripts/      Environment setup and live, browser, and storage verification
+artifacts/    Verification reports and screenshots
+contracts.md  Authentication, API, event, and storage contracts
+plan.md       Product behavior and implementation specification
+```
 
-Open [localhost:3000](http://localhost:3000), sign up, choose a topic, edit the
-generated friend group, and start watching. Completed chats appear in your
-private collection. The backend runs at [localhost:8000](http://localhost:8000)
-with its OpenAPI documentation at `/docs`.
+## Requirements
 
-Use `localhost` consistently for both services so cookie authentication reaches
-the WebSocket endpoint. The environment setup links `server/.env` to the root
-file, generates a separate random JWT signing key only when absent, and writes
-only public API/WebSocket URLs into `client/.env.local`.
+- Node.js 22+
+- Python 3.11+
+- [uv](https://docs.astral.sh/uv/)
+- Redis or Upstash Redis
+- Supabase project
+- Groq API key
+- Gemini API key
 
-Python dependencies are managed in `server/pyproject.toml` and `server/uv.lock`.
-`npm run setup:server` runs `uv sync`, which creates the managed environment
-automatically. The backend runs with `python main.py` after activation, and the
-root Python helper commands use `uv run`.
-Add dependencies with `uv add --project server <package>`.
+## Configuration
 
-## Verification
+Copy `.env.example` to `.env` and fill in the backend values:
 
-Deterministic backend tests, frontend state/contract tests, and production build:
+```dotenv
+GROQ_API_KEY=...
+GEMINI_API_KEY=...
+REDIS_URL=redis://localhost:6379
+SUPABASE_URL=https://your-project.supabase.co
+SUPABASE_SERVICE_ROLE_KEY=...
+JWT_SECRET=at-least-32-random-bytes
+ALLOWED_ORIGINS=http://localhost:3000
+COOKIE_SECURE=false
+```
+
+Run the migration in
+`supabase/migrations/202610160001_backchannel.sql` against the Supabase
+project. The setup script creates `server/.env` as a link to the root
+environment and writes only public API URLs to `client/.env.local`.
+
+Never expose provider keys, the JWT secret, or the Supabase service-role key
+to the client.
+
+## Run locally
+
+Install dependencies from the repository root:
+
+```bash
+python3 scripts/setup_env.py
+npm run setup:server
+npm ci
+npm --prefix client ci
+```
+
+Start the backend:
+
+```bash
+cd server
+source .venv/bin/activate
+python main.py
+```
+
+In another terminal, start the frontend:
+
+```bash
+cd client
+npm run dev
+```
+
+Open [http://localhost:3000](http://localhost:3000). Use `localhost` for both
+services so browser cookies are available to the WebSocket handshake.
+The backend is available at [http://localhost:8000](http://localhost:8000);
+its OpenAPI documentation is at `/docs`.
+
+Root shortcuts are also available:
+
+```bash
+npm run dev          # frontend
+npm run dev:server   # backend
+```
+
+## API overview
+
+| Method | Path | Purpose |
+| --- | --- | --- |
+| `GET` | `/health` | Health and active-room status |
+| `POST` | `/api/auth/register` | Create an account and session |
+| `POST` | `/api/auth/login` | Sign in |
+| `GET` | `/api/auth/me` | Restore the current session |
+| `POST` | `/api/auth/logout` | Revoke the session and close its sockets |
+| `POST` | `/api/generate-personas` | Generate a structured persona roster |
+| `POST` | `/api/rooms/start` | Start a spectator room |
+| `GET` | `/api/chats` | List the current user's saved chats |
+| `GET` | `/api/chats/{room_id}` | Read one saved chat |
+| `WS` | `/ws/rooms/{room_id}` | Receive live room events |
+
+The WebSocket is spectator-only: clients receive events but do not send chat
+messages. Every event has an increasing sequence number so reconnecting
+clients can merge snapshots and live updates safely.
+
+## Testing and verification
+
+Run the deterministic checks:
 
 ```bash
 npm run test:server
@@ -72,7 +172,7 @@ npm --prefix client run typecheck
 npm run build
 ```
 
-With the real backend running and credentials configured:
+With real services configured and the backend running:
 
 ```bash
 npm run check:services
@@ -80,55 +180,32 @@ npm run verify:live
 npm run test:storage
 ```
 
-`verify:live` creates temporary accounts, measures real three-persona generation,
-runs an eight-message room with real Groq/Gemini calls, checks WebSockets,
-authentication, ownership, Redis, and Supabase archives, then cleans up its test
-records. This command uses provider quota. `test:storage` verifies a 35-message
-rolling window and archive-outage recovery against isolated real Redis keys.
+`verify:live` uses provider quota and checks authentication, persona
+generation, an eight-message live room, WebSockets, Redis, Supabase archives,
+and ownership isolation. `test:storage` checks rolling-window behavior,
+durable archive retries, and outage recovery.
 
-For browser checks, stop the real backend and run the dedicated deterministic
-fixture backend on port 8000. Keep the frontend running on port 3000:
+For deterministic browser testing, use the fixture backend instead of the real
+provider-backed server:
 
 ```bash
 npm run test:fixture-server
-```
-
-Then, in another terminal:
-
-```bash
 npm run setup:browser
 npm run test:browser
 ```
 
-The browser harness refuses to run against the production backend. It exercises
-signup, cookie restoration, editable personas, live HTTP/WebSocket transport,
-reconnection, message caps, private archives, logout, and mobile layouts without
-provider requests. Browser binaries are kept under `/tmp/backchannel-playwright`.
+Reports are written to `artifacts/`, including integration, storage, browser,
+verification, and persona-performance results.
 
-Reports are written to `artifacts/integration.json`, `artifacts/storage.json`,
-and `artifacts/browser.json`; browser screenshots are in `artifacts/screenshots/`.
-Real-service results and deterministic results are reported separately.
-`artifacts/verification.json` summarizes the implementation verification, and
-`artifacts/persona-performance.json` records the focused latency follow-up.
-The real-service report keeps performance misses even when `functional_passed`
-is true; provider response times can vary around the two-second target.
+## Operational notes
 
-## Architecture and operation
+- Live actor tasks do not resume after a process restart; pending archives do.
+- Redis retains the last 30 live messages, but completed archives contain the
+  full transcript.
+- Archive writes are retried and are idempotent by room ID.
+- Set `COOKIE_SECURE=true` behind HTTPS and configure exact frontend origins.
+- The production providers are fixed to `openai/gpt-oss-20b` and
+  `gemini-2.5-flash`; clients cannot select fixture providers.
 
-- `plan.md` contains the product and actor behavior specification;
-  `contracts.md` locks authentication, events, archive APIs, and storage fields.
-- `server/app` separates schemas, provider/storage services, actor engine, and
-  REST/WebSocket endpoints. Run **one Uvicorn worker**, because live rooms and
-  fan-out queues belong to one process.
-- Redis uses one shared transport and no per-agent Pub/Sub connections. It stores
-  the last 30 live messages and metadata; completed transcripts remain in a
-  durable outbox until Supabase acknowledges an idempotent save.
-- Live actor tasks do not resume after a process restart. Pending archive saves
-  are recovered automatically; saved conversations remain available in Supabase.
-- JWT cookies expire after 24 hours. Logout revokes the current session and
-  closes its sockets. Provider and Supabase service keys stay in the backend.
-- Set `COOKIE_SECURE=true` when serving over HTTPS and set `ALLOWED_ORIGINS`
-  to the exact frontend origin. The supplied localhost defaults are for local use.
-- Provider IDs are the exact models in `plan.md`: `openai/gpt-oss-20b` and
-  `gemini-2.5-flash`. Provider failures are surfaced; the application does not
-  silently replace models or select fixture providers.
+The detailed contracts live in [`contracts.md`](contracts.md), and the
+behavioral specification is in [`plan.md`](plan.md).
